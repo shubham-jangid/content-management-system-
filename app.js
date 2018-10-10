@@ -3,13 +3,19 @@ const path = require("path");
 const exphbs = require("express-handlebars");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+const methodOverride = require("method-override");
+
+// importing helper function
+const { select } = require("./helpers/handlebars-helper");
 
 const app = express();
+
 mongoose.Promise = global.Promise;
 
 //body-parser
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(methodOverride("_method"));
 
 mongoose.connect(
   "mongodb://localhost:27017/cms",
@@ -26,7 +32,10 @@ mongoose.connect(
 app.use(express.static(path.join(__dirname, "./public")));
 
 // set view engine
-app.engine("handlebars", exphbs({ defaultLayout: "home" }));
+app.engine(
+  "handlebars",
+  exphbs({ defaultLayout: "home", helpers: { select: select } })
+);
 app.set("view engine", "handlebars");
 
 // importing the routes

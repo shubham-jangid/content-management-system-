@@ -9,7 +9,7 @@ const postSchema = new mongoose.Schema({
     type: String,
     default: "public"
   },
-  allowComment: {
+  allowComments: {
     type: Boolean,
     required: true
   },
