@@ -1,8 +1,34 @@
 const express = require("express");
 const Post = require("./../../models/post");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+
+const uploadDir = path.join(__dirname, "../../public/uploads/");
+
+var storage = multer.diskStorage({
+  destination: "./public/uploads/",
+
+  filename: function(req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  }
+});
+
+var imageFilter = function(req, file, cb) {
+  // accept image files only
+  if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/i)) {
+    return cb(new Error("Only image files are allowed!"), false);
+  }
+  cb(null, true);
+};
+var upload = multer({
+  // dest: "uploads/",
+  storage: storage,
+  fileFilter: imageFilter
+});
 
 const router = express.Router();
-router;
+// router;
 router.all("/*", (req, res, next) => {
   req.app.locals.layout = "admin";
   next();
@@ -29,9 +55,10 @@ router.get("/create", (req, res) => {
   res.render("admin/posts/create");
 });
 
-router.post("/create", (req, res) => {
-  console.log(req.body);
-
+router.post("/create", upload.single("file"), (req, res, next) => {
+  console.log(uploadDir);
+  // console.log(req.file);
+  // console.log(req.body);
   let allowComments = true;
   if (req.body.allowComments) {
     allowComments = true;
@@ -39,12 +66,12 @@ router.post("/create", (req, res) => {
     allowComments = false;
   }
   console.log(allowComments);
-
   const post = new Post();
   post.title = req.body.title;
   post.status = req.body.status;
   post.allowComments = allowComments;
   post.body = req.body.body;
+  post.file = req.file.filename;
   post
     .save()
     .then(() => {
@@ -82,8 +109,11 @@ router.put("/edit/:id", (req, res) => {
 });
 
 router.delete("/:id", (req, res) => {
-  Post.deleteOne({ _id: req.params.id }).then(() => {
-    res.redirect("/admin/posts");
+  Post.findOne({ _id: req.params.id }).then(posts => {
+    fs.unlink(uploadDir + posts.file, err => {
+      posts.remove();
+      res.redirect("/admin/posts");
+    });
   });
 });
 
