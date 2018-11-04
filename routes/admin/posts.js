@@ -63,16 +63,14 @@ router.post("/create", upload.single("file"), (req, res, next) => {
   if (!req.file) {
     error.push({ message: "please add file" });
   }
+
   if (!req.body.body) {
-    error.push({ message: "please add title" });
-  }
-  if (!req.body.title) {
     error.push({ message: "please add description" });
   }
 
   if (error.length > 0) {
     res.render("admin/posts/create", {
-      error: error
+      errors: error
     });
   } else {
     let allowComments = true;
