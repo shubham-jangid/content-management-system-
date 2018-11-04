@@ -28,7 +28,6 @@ var upload = multer({
 });
 
 const router = express.Router();
-// router;
 router.all("/*", (req, res, next) => {
   req.app.locals.layout = "admin";
   next();
@@ -56,30 +55,48 @@ router.get("/create", (req, res) => {
 });
 
 router.post("/create", upload.single("file"), (req, res, next) => {
-  console.log(uploadDir);
-  // console.log(req.file);
-  // console.log(req.body);
-  let allowComments = true;
-  if (req.body.allowComments) {
-    allowComments = true;
-  } else {
-    allowComments = false;
+  let error = [];
+
+  if (!req.body.title) {
+    error.push({ message: "please add title" });
   }
-  console.log(allowComments);
-  const post = new Post();
-  post.title = req.body.title;
-  post.status = req.body.status;
-  post.allowComments = allowComments;
-  post.body = req.body.body;
-  post.file = req.file.filename;
-  post
-    .save()
-    .then(() => {
-      res.redirect("/admin/posts");
-    })
-    .catch(err => {
-      console.log(err);
+  if (!req.file) {
+    error.push({ message: "please add file" });
+  }
+  if (!req.body.body) {
+    error.push({ message: "please add title" });
+  }
+  if (!req.body.title) {
+    error.push({ message: "please add description" });
+  }
+
+  if (error.length > 0) {
+    res.render("admin/posts/create", {
+      error: error
     });
+  } else {
+    let allowComments = true;
+    if (req.body.allowComments) {
+      allowComments = true;
+    } else {
+      allowComments = false;
+    }
+    console.log(allowComments);
+    const post = new Post();
+    post.title = req.body.title;
+    post.status = req.body.status;
+    post.allowComments = allowComments;
+    post.body = req.body.body;
+    post.file = req.file.filename;
+    post
+      .save()
+      .then(() => {
+        res.redirect("/admin/posts");
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  }
 });
 
 router.put("/edit/:id", (req, res) => {
