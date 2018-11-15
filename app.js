@@ -4,6 +4,8 @@ const exphbs = require("express-handlebars");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const methodOverride = require("method-override");
+const session = require("express-session");
+const flash = require("connect-flash");
 
 // importing helper function
 const { select } = require("./helpers/handlebars-helper");
@@ -40,6 +42,23 @@ app.use(bodyParser.json());
 
 //method override
 app.use(methodOverride("_method"));
+
+app.use(
+  session({
+    secret: "keyboard cat",
+    resave: false,
+    saveUninitialized: true
+  })
+);
+
+app.use(flash());
+
+// local variables using middleware
+
+app.use((req, res, next) => {
+  res.locals.success_message = req.flash("success_message");
+  next();
+});
 
 // importing the routes
 const home = require("./routes/home/index");

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const moment = require("moment");
 
 const postSchema = new mongoose.Schema({
   title: {
@@ -19,6 +20,11 @@ const postSchema = new mongoose.Schema({
   },
   file: {
     type: String
+  },
+
+  date: {
+    type: Date
+    // default: Date.now()
   }
 });
 

@@ -3,6 +3,8 @@ const Post = require("./../../models/post");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const flash = require("connect-flash");
+const moment = require("moment");
 
 const uploadDir = path.join(__dirname, "../../public/uploads/");
 
@@ -60,9 +62,6 @@ router.post("/create", upload.single("file"), (req, res, next) => {
   if (!req.body.title) {
     error.push({ message: "please add title" });
   }
-  if (!req.file) {
-    error.push({ message: "please add file" });
-  }
 
   if (!req.body.body) {
     error.push({ message: "please add description" });
@@ -85,10 +84,21 @@ router.post("/create", upload.single("file"), (req, res, next) => {
     post.status = req.body.status;
     post.allowComments = allowComments;
     post.body = req.body.body;
-    post.file = req.file.filename;
+    const date = moment(req.body.date).format("MMMM Do YYYY, h:mm:ss a");
+    post.date = date;
+    console.log(date);
+
+    if (req.file) {
+      post.file = req.file.filename;
+    }
     post
       .save()
-      .then(() => {
+      .then(savedPost => {
+        req.flash(
+          "success_message",
+          `post ${savedPost.title} successfully created`
+        );
+        console.log(savedPost);
         res.redirect("/admin/posts");
       })
       .catch(err => {
@@ -97,7 +107,7 @@ router.post("/create", upload.single("file"), (req, res, next) => {
   }
 });
 
-router.put("/edit/:id", (req, res) => {
+router.put("/edit/:id", upload.single("file"), (req, res) => {
   Post.findOne({ _id: req.params.id })
     .then(post => {
       if (req.body.allowComments) {
@@ -109,9 +119,16 @@ router.put("/edit/:id", (req, res) => {
       post.status = req.body.status;
       post.allowComments = allowComments;
       post.body = req.body.body;
+      if (req.file) {
+        post.file = req.file.filename;
+      }
       post
         .save()
         .then(updatedPost => {
+          req.flash(
+            "success_message",
+            `post ${updatedPost.title} successfully updated`
+          );
           res.redirect("/admin/posts");
         })
         .catch(err => {
@@ -129,6 +146,7 @@ router.delete("/:id", (req, res) => {
       posts.remove();
       res.redirect("/admin/posts");
     });
+    req.flash("success_message", `post ${posts.title} successfully deleted`);
   });
 });
 

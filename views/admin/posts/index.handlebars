@@ -1,5 +1,7 @@
 <h1> all post here</h1>
 
+{{> home/form-msgs}}
+
 <table class="table table-bordered ">
 
     <thead>
@@ -9,6 +11,7 @@
             <th>Title</th>
             <th>Status</th>
             <th>Allow Comments</th>
+            <th>Date</th>
             <th>Edit</th>
             <th>Delete</th>
 
@@ -25,6 +28,7 @@
             <td>{{title}}</td>
             <td>{{status}}</td>
             <td>{{allowComments}}</td>
+            <td>{{date}}</td>
             <td>
                 <a href="/admin/posts/edit/{{id}}" class="btn btn-info"> Edit</a>
             </td>
